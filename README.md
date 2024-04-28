@@ -16,7 +16,7 @@ scikit-learn's GridSearchCV
 - Gradient-Boosted Support Vector Machines (Linear/Kernel)
 
 ## Dataset
-- Viewer Engagement Data
+- Viewer Engagement Data (sourced from https://github.com/sahanbull/VLE-Dataset?tab=readme-ov-file#vle-datasets)
 - 7 features (incl numeric and boolean inputs)
 - Binary boolean classes
 - 2309-sized dataset 
