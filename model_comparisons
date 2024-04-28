@@ -1,84 +1,99 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.svm import SVC
 
 np.random.seed(0)
 
-def engagement_model():
-    rec = None
-    
-    from sklearn.model_selection import train_test_split
-    training_data = pd.read_csv('assets/train.csv').set_index('id')
-    test_data = pd.read_csv('assets/test.csv').set_index('id')
-    X = training_data.iloc[:,:-1]
-    y = training_data.iloc[:,-1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+class FindBestModel():
+
+    def __init__(self, roc_accuracy = 0.85) -> None:
+        self.min_roc_accuracy = roc_accuracy
+
+        training_data = pd.read_csv('train.csv').set_index('id')
+        self.test_data = pd.read_csv('test.csv').set_index('id')
+        x = training_data.iloc[:,:-1]
+        y = training_data.iloc[:,-1]
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y, random_state=0)
+            
+        scaler = MinMaxScaler()
+        self.X_train_scaled = scaler.fit_transform(self.X_train)
+        self.X_test_scaled = scaler.fit_transform(self.X_test)
+        self.test_scaled = scaler.fit_transform(self.test_data)
         
-    from sklearn.preprocessing import MinMaxScaler
-    scaler = MinMaxScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.fit_transform(X_test)
-    test_scaled = scaler.fit_transform(test_data)
-    
-    from sklearn.preprocessing import PolynomialFeatures
-    poly = PolynomialFeatures(degree=2)
-    X_train_poly_scaled = poly.fit_transform(X_train_scaled)
-    X_test_poly_scaled = poly.fit_transform(X_test_scaled)
-    test_poly_scaled = poly.fit_transform(test_scaled)
-    
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.neural_network import MLPClassifier
-    from sklearn.naive_bayes import GaussianNB
-    from sklearn.neighbors import KNeighborsClassifier
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.ensemble import GradientBoostingClassifier
-    from sklearn.svm import SVC
-    
-    from sklearn.model_selection import GridSearchCV
-    from sklearn.metrics import roc_auc_score
-    
-    # logreg = LogisticRegression(solver='liblinear').fit(X_train_poly_scaled, y_train)
-    # grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
-    # gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(X_test_poly_scaled, y_test)
-    # best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
-    # best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
-    # return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
-
-    logreg = LogisticRegression(solver='liblinear', C=10, penalty='l1').fit(X_train_poly_scaled, y_train)
-    ans = pd.DataFrame(data=logreg.predict_proba(test_poly_scaled), columns=['unengaged', 'engagement'])
-    ans.index = test_data.index
-    return ans['engagement']
-    
-    # gaussian_fit = GaussianNB().fit(X_train_scaled, y_train)
-    # return roc_auc_score(y_test, gaussian_fit.predict_proba(X_test_scaled))
-    # grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
-    # gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(X_test_poly_scaled, y_test)
-    # best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
-    # best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
-    # return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
-
-    # for clas, param in []
-    #     if param == []
-    
-    mlp = (MLPClassifier(hidden_layer_sizes = [10, 10], solver='lbfgs', alpha = 0.1, activation = this_activation,
-                 random_state = 0).fit(X_train_scaled, y_train))
-    
-    knnfit = KNeighborsClassifier(n_neighbors = 2).fit(X_train, y_train)
-    
-    tree_fit = DecisionTreeClassifier(max_depth = 3).fit(X_train, y_train) 
-    
-    random_forest_fit = RandomForestClassifier(max_features=8, n_estimators=100, random_state = 0).fit(X_train, y_train)
-    
-    gbdt = (GradientBoostingClassifier(learning_rate = 0.01, n_estimators=25, max_depth = 2, random_state = 0)
-                .fit(X_train, y_train))
-    
-    scv_linear_fit = SVC(kernel = 'linear', C=1.0).fit(X_train_scaled, y_train)
-    scv_poly_fit = SVC(kernel = 'poly', C=1.0, deg=3).fit(X_train_scaled, y_train)
-    scv_rbf_fit = SVC(kernel = 'rbf', C=1.0, gamma=1.0).fit(X_train_scaled, y_train)
+        poly = PolynomialFeatures(degree=2)
+        self.X_train_poly_scaled = poly.fit_transform(self.X_train_scaled)
+        self.X_test_poly_scaled = poly.fit_transform(self.X_test_scaled)
+        self.test_poly_scaled = poly.fit_transform(self.test_scaled)
 
 
-    return test_data
-    return model 
-    return rec
+    def logistic_roc(self):
+        logreg = LogisticRegression(solver='liblinear').fit(self.X_train_poly_scaled, self.y_train)
+        grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
+        gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(self.X_test_poly_scaled, self.y_test)
+        best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
+        best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
+        return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
+    
 
-engagement_model()
+    # def gaussian_roc(self):
+    #     gaussian_fit = GaussianNB().fit(X_train_scaled, y_train)
+    #     return roc_auc_score(y_test, gaussian_fit.predict_proba(X_test_scaled))
+    #     grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
+    #     gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(X_test_poly_scaled, y_test)
+    #     best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
+    #     best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
+    #     return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
+    
+
+    # def model_roc(slef):
+    #     pass
+
+
+    # def score_all_models(self):
+    #     mlp = (MLPClassifier(hidden_layer_sizes = [10, 10], solver='lbfgs', alpha = 0.1, activation = this_activation,
+    #              random_state = 0).fit(X_train_scaled, y_train))
+    
+    #     knnfit = KNeighborsClassifier(n_neighbors = 2).fit(X_train, y_train)
+        
+    #     tree_fit = DecisionTreeClassifier(max_depth = 3).fit(X_train, y_train) 
+        
+    #     random_forest_fit = RandomForestClassifier(max_features=8, n_estimators=100, random_state = 0).fit(X_train, y_train)
+        
+    #     gbdt = (GradientBoostingClassifier(learning_rate = 0.01, n_estimators=25, max_depth = 2, random_state = 0)
+    #                 .fit(X_train, y_train))
+        
+    #     scv_linear_fit = SVC(kernel = 'linear', C=1.0).fit(X_train_scaled, y_train)
+    #     scv_poly_fit = SVC(kernel = 'poly', C=1.0, deg=3).fit(X_train_scaled, y_train)
+    #     scv_rbf_fit = SVC(kernel = 'rbf', C=1.0, gamma=1.0).fit(X_train_scaled, y_train)
+
+    
+    # def find_best_model(self, model_scores):
+    #     pass
+
+
+    # def predictor_helper(self):
+    #     logreg = LogisticRegression(solver='liblinear', C=10, penalty='l1').fit(X_train_poly_scaled, y_train)
+    #     ans = pd.DataFrame(data=logreg.predict_proba(test_poly_scaled), columns=['unengaged', 'engagement'])
+    #     ans.index = test_data.index
+    #     return ans['engagement']
+
+    # def predict_test(self, model):
+        
+    #     ans = pd.DataFrame(data=logreg.predict_proba(test_poly_scaled), columns=['unengaged', 'engagement'])
+    #     ans.index = test_data.index
+    #     return ans['engagement']
+
+
+model_selector = FindBestModel()
+print(model_selector.logistic_roc())
