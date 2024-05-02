@@ -20,7 +20,7 @@ class FindBestModel():
     def __init__(self, roc_accuracy = 0.85) -> None:
         self.min_roc_accuracy = roc_accuracy
 
-        training_data = pd.read_csv('train.csv').set_index('id')
+        training_data = pd.read_csv('train.csv').set_index('id')    
         self.test_data = pd.read_csv('test.csv').set_index('id')
         x = training_data.iloc[:,:-1]
         y = training_data.iloc[:,-1]
@@ -38,61 +38,116 @@ class FindBestModel():
 
 
     def logistic_roc(self):
-        logreg = LogisticRegression(solver='liblinear').fit(self.X_train_poly_scaled, self.y_train)
-        grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
-        gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(self.X_test_poly_scaled, self.y_test)
-        best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
-        best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
-        return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
+        logreg = LogisticRegression().fit(self.X_train_poly_scaled, self.y_train)
+        params = {'penalty':['l1','l2'],'C':[0.01,0.1,1,10],'solver':['liblinear']}
+        results = GridSearchCV(logreg, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test_poly_scaled, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+    
+    def gaussian_roc(self):
+        gaussian_fit = GaussianNB().fit(self.X_train_scaled, self.y_train)
+        params = {'priors': [None]}
+        results = GridSearchCV(gaussian_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+    
+    def mlp_roc(self):
+        mlp_fit = MLPClassifier(random_state=0).fit(self.X_train_scaled, self.y_train)
+        params = {'hidden_layer_sizes':[1,10,100],'solver':['lbfgs'],'alpha':[0.01,0.1,1,10],'activation':['logistic','tanh','relu']}
+        results = GridSearchCV(mlp_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test_scaled, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+    
+    def knn_roc(self):
+        knn_fit = KNeighborsClassifier().fit(self.X_train, self.y_train)
+        params = {'n_neighbors':[1,10,100],'weights':['uniform','distance'],'algorithm':['auto','ball_tree','kd_tree','brute']}
+        results = GridSearchCV(knn_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+
+    def decision_tree_roc(self):
+        tree_fit = DecisionTreeClassifier(random_state = 0).fit(self.X_train, self.y_train)
+        params = {'max_depth':[2,4,6,10],'splitter':['best','random']}
+        results = GridSearchCV(tree_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+    
+    def random_forest_roc(self):
+        rf_fit = RandomForestClassifier(random_state = 0).fit(self.X_train, self.y_train)
+        params = {'max_features':[2,4,6,10],'n_estimators':[10,100,500],'n_jobs':[1,5,10]}
+        results = GridSearchCV(rf_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+
+    def gbdt_roc(self):
+        gbdt_fit = GradientBoostingClassifier(random_state=0).fit(self.X_train_scaled, self.y_train)
+        params = {'n_estimators':[10,100,500],'max_depth':[2,4,6,10],'learning_rate':[0.001,0.1,1,10]}
+        results = GridSearchCV(gbdt_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test_scaled, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+    
+    def svm_roc(self):
+        svm_fit = SVC(random_state=0).fit(self.X_train_scaled, self.y_train)
+        params = {'kernel':['poly', 'linear', 'rbf'],'gamma':[0.01,1,10],'C':[0.001,0.1,1,10,100]}
+        results = GridSearchCV(svm_fit, param_grid=params, scoring='roc_auc', cv=5).fit(self.X_test_scaled, self.y_test)
+        return {'model': f'{results.best_estimator_}', 'roc_auc score': results.best_score_}
+
+    def model_fits(self):
+        return [
+            {
+                'model': LogisticRegression().fit(self.X_train_poly_scaled, self.y_train),
+                'params': {'penalty':['l1','l2'],'C':[0.01,0.1,1,10],'solver':['liblinear']},
+                'x_test': self.X_test_poly_scaled
+            },
+            {
+                'model': SVC(random_state=0).fit(self.X_train_scaled, self.y_train),
+                'params': {'kernel':['poly', 'linear', 'rbf'],'gamma':[0.01,1,10],'C':[0.001,0.1,1,10,100]},
+                'x_test': self.X_test_scaled
+            },
+            {
+                'model': MLPClassifier(random_state=0).fit(self.X_train_scaled, self.y_train),
+                'params': {'hidden_layer_sizes':[1,10,100],'solver':['lbfgs'],'alpha':[0.01,0.1,1,10],'activation':['logistic','tanh','relu']},
+                'x_test': self.X_test_scaled
+            },
+            {
+                'model': GaussianNB().fit(self.X_train, self.y_train),
+                'params': {'priors': [None]},
+                'x_test': self.X_test
+            },
+            {
+                'model': KNeighborsClassifier().fit(self.X_train, self.y_train),
+                'params': {'n_neighbors':[1,10,100],'weights':['uniform','distance'],'algorithm':['auto','ball_tree','kd_tree','brute']},
+                'x_test': self.X_test
+            },
+            {
+                'model': DecisionTreeClassifier(random_state = 0).fit(self.X_train, self.y_train),
+                'params': {'max_depth':[2,4,6,10],'splitter':['best','random']},
+                'x_test': self.X_test
+            },
+            {
+                'model': RandomForestClassifier(random_state = 0).fit(self.X_train, self.y_train),
+                'params': {'max_features':[2,4,6,10],'n_estimators':[10,100,500],'n_jobs':[1,5,10]},
+                'x_test': self.X_test
+            },
+            {
+                'model': GradientBoostingClassifier(random_state=0).fit(self.X_train_scaled, self.y_train),
+                'params': {'n_estimators':[10,100,500],'max_depth':[2,4,6,10],'learning_rate':[0.001,0.1,1,10]},
+                'x_test': self.X_test
+            }
+        ]
     
 
-    # def gaussian_roc(self):
-    #     gaussian_fit = GaussianNB().fit(X_train_scaled, y_train)
-    #     return roc_auc_score(y_test, gaussian_fit.predict_proba(X_test_scaled))
-    #     grid_params = {'penalty': ['l1', 'l2'], 'C':[0.01, 0.1, 1, 10]}
-    #     gs_eval = GridSearchCV(logreg, param_grid=grid_params, scoring='roc_auc', cv=5).fit(X_test_poly_scaled, y_test)
-    #     best_logreg_auc_idx = gs_eval.cv_results_['mean_test_score'].max(), np.argmax(gs_eval.cv_results_['mean_test_score'])
-    #     best_logreg_model = gs_eval.cv_results_['params'][best_logreg_auc_idx[1]]
-    #     return f'Tuple {best_logreg_auc_idx} and Model {best_logreg_model}'
-    
-
-    # def model_roc(slef):
-    #     pass
+    def model_rocs(self):
+        models, rocs = self.model_fits(), []
+        for model in models:
+            results = GridSearchCV(model['model'],param_grid=model['params'],scoring='roc_auc',cv=5).fit(model['x_test'], self.y_test)
+            rocs.append({'ob': results.best_estimator_, 'roc_auc_score': results.best_score_})
+        return rocs
 
 
-    # def score_all_models(self):
-    #     mlp = (MLPClassifier(hidden_layer_sizes = [10, 10], solver='lbfgs', alpha = 0.1, activation = this_activation,
-    #              random_state = 0).fit(X_train_scaled, y_train))
-    
-    #     knnfit = KNeighborsClassifier(n_neighbors = 2).fit(X_train, y_train)
-        
-    #     tree_fit = DecisionTreeClassifier(max_depth = 3).fit(X_train, y_train) 
-        
-    #     random_forest_fit = RandomForestClassifier(max_features=8, n_estimators=100, random_state = 0).fit(X_train, y_train)
-        
-    #     gbdt = (GradientBoostingClassifier(learning_rate = 0.01, n_estimators=25, max_depth = 2, random_state = 0)
-    #                 .fit(X_train, y_train))
-        
-    #     scv_linear_fit = SVC(kernel = 'linear', C=1.0).fit(X_train_scaled, y_train)
-    #     scv_poly_fit = SVC(kernel = 'poly', C=1.0, deg=3).fit(X_train_scaled, y_train)
-    #     scv_rbf_fit = SVC(kernel = 'rbf', C=1.0, gamma=1.0).fit(X_train_scaled, y_train)
+    def find_best_model(self):
+        model_scores = self.model_rocs()
+        return max((model_score['roc_auc_score'], model_score) for model_score in model_scores)[1]
+ 
 
-    
-    # def find_best_model(self, model_scores):
-    #     pass
-
-
-    # def predictor_helper(self):
-    #     logreg = LogisticRegression(solver='liblinear', C=10, penalty='l1').fit(X_train_poly_scaled, y_train)
-    #     ans = pd.DataFrame(data=logreg.predict_proba(test_poly_scaled), columns=['unengaged', 'engagement'])
-    #     ans.index = test_data.index
-    #     return ans['engagement']
-
-    # def predict_test(self, model):
-        
-    #     ans = pd.DataFrame(data=logreg.predict_proba(test_poly_scaled), columns=['unengaged', 'engagement'])
-    #     ans.index = test_data.index
-    #     return ans['engagement']
+    def best_model_predict(self):
+        best_model = self.find_best_model()
+        if any(model in str(best_model['ob']) for model in ['SVC', 'MLP']): return best_model['ob'].predict(self.test_scaled)
+        elif 'Logistic' in str(best_model['ob']): return best_model['ob'].predict(self.test_poly_scaled)
+        else: return best_model['ob'].predict(self.test_data)
 
 
 model_selector = FindBestModel()
