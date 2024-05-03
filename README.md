@@ -1,11 +1,9 @@
 # Machine-Learning-Classifications
 Using various supervised ML models to compare best classification
 
-## Metric
+## Evaluation Metric
 Find best ML classifier based on roc-auc 
-
-## Evaluation Method
-scikit-learn's GridSearchCV Validator
+Uses scikit-learn's GridSearchCV Validator to optimize model parameters
 
 ## Supervised ML models
 - Logistic (with Polynomial features)
