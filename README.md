@@ -1,4 +1,4 @@
-# Machine-Learning-Classifications
+# Machine Learning Classifications
 Using various supervised ML models to compare best classification 
 
 ## Dataset
@@ -9,10 +9,10 @@ Using various supervised ML models to compare best classification
 - Testing dataset of 2309 rows with only inputs 
 
 ## Approach
-Firstly, we turned a regression problem into a classification one, since the original target was Median Viewing Time.
-Done by defining the label True if Median Viewing Time was >30% of total duration, else False.
-Often reduced dimensionality is more useful; knowing the exact view-time may be more confusing than just knowing if engaged or not.
-Classification also allows us to compare more ML models, e.g. Naïve Bayes, Random Forest, etc. (Logit replaces Linear Regression.)
+Firstly, we turned a regression problem into a classification one, since the original target was Median Viewing Time.\n
+Done by defining the label True if Median Viewing Time was >30% of total duration, else False.\n
+Often reduced dimensionality is more useful; knowing the exact view-time may be more confusing than just knowing if engaged or not.\n
+Classification also allows us to compare more ML models, e.g. Naïve Bayes, Random Forest, etc. (Logit replaces Linear Regression.)\n
 Total list of classifiers is:
 
 ### Supervised ML models
@@ -26,8 +26,8 @@ Total list of classifiers is:
 - Gradient-Boosted Decision Trees
 
 ### Evaluation Metric
-Once we trained the models, we use scikit-learn's GridSearchCV Validator to optimize model parameters based on roc-auc 
-Basically 2 optimizations are to be done:
+Once we trained the models, we use scikit-learn's GridSearchCV Validator to optimize model parameters based on roc-auc\n
+Basically 2 optimizations are to be done:\n
 - The GridSearchCV().best_estimator_ attribute finds estimator's best parameters vis a vis roc-auc
-- We define a find_best_model() method to select the best of the best, best estimator among the estimator 'finalists'
+- We define a find_best_model() method to select the best of the best, best estimator among the estimator 'finalists'\n
 We use this model to predict the training dataset
