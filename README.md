@@ -1,21 +1,33 @@
 # Machine-Learning-Classifications
-Using various supervised ML models to compare best classification
-
-## Evaluation Metric
-Find best ML classifier based on roc-auc 
-Uses scikit-learn's GridSearchCV Validator to optimize model parameters
-
-## Supervised ML models
-- Logistic (with Polynomial features)
-- Naïve Bayes
-- Neural Networks (MLP)
-- kNN classifier
-- Ensemble-Trees (Random Forests)
-- Gradient-Boosted Support Vector Machines (Linear/Kernel)
+Using various supervised ML models to compare best classification 
 
 ## Dataset
 - Viewer Engagement Data sourced from https://github.com/sahanbull/VLE-Dataset?tab=readme-ov-file#vle-datasets
 - 7 features (title_word_count, document_entropy, freshness, easiness, fraction_stopword_presence, normalization_rate, speaker_speed, silent_period_rate)
-- Binary boolean label indicating Engaged or not (True if Median viewing time was >30% of total duration, else False)
-- Training dataset with 9239 rows with inputs and labels for training 
-- Testing dataset with 2309 rows with only inputs 
+- Binary boolean label indicating Engaged or not 
+- Training dataset of 9239 rows with inputs and labels for training 
+- Testing dataset of 2309 rows with only inputs 
+
+## Approach
+Firstly, we turned a regression problem into a classification one, since the original target was Median Viewing Time.
+Done by defining the label True if Median Viewing Time was >30% of total duration, else False.
+Often reduced dimensionality is more useful; knowing the exact view-time may be more confusing than just knowing if engaged or not.
+Classification also allows us to compare more ML models, e.g. Naïve Bayes, Random Forest, etc. (Logit replaces Linear Regression.)
+Total list of classifiers is:
+
+### Supervised ML models
+- Gaussian Naïve Bayes
+- kNN classifier
+- Logit
+- Support Vector Machines 
+- Neural Networks (MLP)
+- Decision Trees
+- Ensemble-Trees (Random Forests)
+- Gradient-Boosted Decision Trees
+
+### Evaluation Metric
+Once we trained the models, we use scikit-learn's GridSearchCV Validator to optimize model parameters based on roc-auc 
+Basically 2 optimizations are to be done:
+- The GridSearchCV().best_estimator_ attribute finds estimator's best parameters vis a vis roc-auc
+- We define a find_best_model() method to select the best of the best, best estimator among the estimator 'finalists'
+We use this model to predict the training dataset
