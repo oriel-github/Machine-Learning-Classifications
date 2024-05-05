@@ -29,5 +29,6 @@ Total list of classifiers is:
 Once we trained the models, we use scikit-learn's GridSearchCV Validator to optimize model parameters based on roc-auc  
 Basically 2 optimizations are to be done:  
 - The GridSearchCV().best_estimator_ attribute finds estimator's best parameters vis a vis roc-auc
-- We define a find_best_model() method to select the best of the best, best estimator among the estimator 'finalists'  
-We use this model to predict the training dataset
+- We define a find_best_model() method to select the best of the best, best estimator among the estimator 'finalists'
+
+We use this model to predict the training dataset 
