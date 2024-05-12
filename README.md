@@ -8,6 +8,7 @@ https://github.com/sahanbull/VLE-Dataset?tab=readme-ov-file#vle-datasets
 - Binary boolean label indicating Engaged or not 
 - Training dataset of 9239 rows with inputs and labels for training 
 - Testing dataset of 2309 rows with only inputs 
+- Both datasets are sample selections through Coursera's Machine Learning Module with University of Michigan of the wider VLE dataset mentioned earlier.
 
 ## Approach
 Firstly, we turned a regression problem into a classification one, since the original target was Median Viewing Time.  
