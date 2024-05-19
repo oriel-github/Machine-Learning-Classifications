@@ -1,5 +1,5 @@
 # Machine Learning Classifications
-Using various supervised ML models to compare best classification 
+Finding the best ML model to classify unclassified viewer engagement test data.  
 
 ## Dataset
 - Viewer Engagement Data sourced from:  
